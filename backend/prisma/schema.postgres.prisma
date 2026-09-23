@@ -1,0 +1,138 @@
+// VeriRoll — data model draft
+// One authoritative enrollment source (portal sync) + manual overrides.
+// One open session per course unit at a time. Auto-close on a timer.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // swap to "sqlite" for local/dev if you want zero setup
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  LECTURER
+  ADMIN
+}
+
+enum AuthProvider {
+  GOOGLE
+  MICROSOFT
+}
+
+enum EnrollmentSource {
+  PORTAL
+  MANUAL
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum AttendanceMethod {
+  SELF        // student registered themselves during an open session
+  MANUAL      // lecturer/admin added or corrected it
+  AUTO_ABSENT // system default when a session closes with no record
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String
+  email         String       @unique
+  role          Role
+  authProvider  AuthProvider
+  providerId    String       // subject id from Google/Microsoft token
+  createdAt     DateTime     @default(now())
+
+  enrollments       Enrollment[]
+  lecturerUnits     CourseUnit[]        @relation("LecturerAssignment")
+  attendanceRecords AttendanceRecord[]  @relation("StudentAttendance")
+  editedRecords     AttendanceRecord[]  @relation("EditedBy")
+  auditLogs         AuditLog[]
+
+  @@index([email])
+}
+
+model CourseUnit {
+  id             String   @id @default(cuid())
+  code           String   @unique   // e.g. "CS301"
+  name           String             // e.g. "Database Systems"
+  lessonsPlanned Int                // total lessons for the semester, set by lecturer/admin
+  createdAt      DateTime @default(now())
+
+  lecturers   User[]        @relation("LecturerAssignment")
+  enrollments Enrollment[]
+  sessions    Session[]
+
+  @@index([code])
+}
+
+model Enrollment {
+  id           String           @id @default(cuid())
+  student      User             @relation(fields: [studentId], references: [id])
+  studentId    String
+  courseUnit   CourseUnit       @relation(fields: [courseUnitId], references: [id])
+  courseUnitId String
+  source       EnrollmentSource @default(PORTAL)
+  createdAt    DateTime         @default(now())
+
+  @@unique([studentId, courseUnitId]) // a student enrolls a unit once
+  @@index([courseUnitId])
+}
+
+model Session {
+  id             String        @id @default(cuid())
+  courseUnit     CourseUnit    @relation(fields: [courseUnitId], references: [id])
+  courseUnitId   String
+  lectureNumber  Int           // e.g. 18 of 24
+  status         SessionStatus @default(OPEN)
+  openedAt       DateTime      @default(now())
+  closedAt       DateTime?
+  autoCloseAt    DateTime      // openedAt + fixed window (e.g. 20 min); background job enforces this
+
+  attendanceRecords AttendanceRecord[]
+
+  // Enforced in application code, not the schema: only one OPEN session
+  // per courseUnitId at a time (see routes/sessions.js).
+  @@index([courseUnitId, status])
+}
+
+model AttendanceRecord {
+  id         String            @id @default(cuid())
+  session    Session           @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  student    User              @relation("StudentAttendance", fields: [studentId], references: [id])
+  studentId  String
+  status     AttendanceStatus
+  method     AttendanceMethod
+  recordedAt DateTime          @default(now())
+
+  // Present only when a lecturer/admin manually added or corrected this record.
+  editedBy   User?             @relation("EditedBy", fields: [editedById], references: [id])
+  editedById String?
+  editedAt   DateTime?
+
+  @@unique([sessionId, studentId]) // one record per student per session
+  @@index([studentId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      User     @relation(fields: [actorId], references: [id])
+  actorId    String
+  action     String   // e.g. "SESSION_STARTED", "ATTENDANCE_CORRECTED", "ENROLLMENT_MANUAL_ADD"
+  targetType String   // "Session" | "AttendanceRecord" | "Enrollment" | "CourseUnit" | "User"
+  targetId   String
+  detail     String?  // short human-readable note, e.g. "marked Derrick O. present (was absent)"
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
