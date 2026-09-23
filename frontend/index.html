@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VeriRoll — Mockup</title>
+<style>
+  :root{
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    --bg:#f4f6f8; --card:#ffffff; --ink:#16202a; --sub:#6b7684;
+    --brand:#2d6cdf; --brand-dark:#1e4fa8; --good:#1f9d55; --warn:#d97706;
+    --line:#e4e8ec; --chip:#eef3fc; --line-strong:#dfe4e9;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1418; --card:#171e25; --ink:#eef2f6; --sub:#9aa7b4;
+      --line:#2a333c; --chip:#1c2a3f; --line-strong:#334049;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1418; --card:#171e25; --ink:#eef2f6; --sub:#9aa7b4;
+    --line:#2a333c; --chip:#1c2a3f; --line-strong:#334049;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    min-height:100%; padding:24px 16px 40px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;}
+  .brand .dot{width:12px;height:12px;border-radius:50%;background:var(--brand);}
+  .tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;}
+  .tab-btn{border:none;background:transparent;padding:8px 16px;border-radius:999px;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;}
+  .tab-btn.active{background:var(--brand);color:#fff;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .phone{
+    max-width:380px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+    border-radius:28px;padding:20px;box-shadow:0 12px 30px rgba(0,0,0,.08);position:relative;
+  }
+  .full{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,.05);margin-bottom:16px;}
+  h2{font-size:16px;margin:0 0 4px;}
+  h3{font-size:14px;margin:0 0 10px;}
+  .muted{color:var(--sub);font-size:13px;margin:0 0 16px;}
+  .session-banner{
+    background:var(--chip);border-radius:14px;padding:14px;text-align:center;margin-bottom:16px;
+  }
+  .session-banner .unit{font-weight:700;font-size:15px;}
+  .session-banner .win{color:var(--sub);font-size:12px;margin-top:2px;}
+  .session-banner.closed{background:var(--bg);border:1px dashed var(--line-strong);}
+  .checkin-btn{
+    width:100%;padding:14px;border:none;border-radius:14px;background:var(--brand);
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;
+  }
+  .checkin-btn.done{background:var(--good);}
+  .checkin-btn[disabled]{background:var(--line-strong);color:var(--sub);cursor:not-allowed;}
+  .roster{border-top:1px solid var(--line);margin-top:14px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;color:var(--sub);font-weight:600;padding:10px 8px;border-bottom:1px solid var(--line);}
+  td{padding:10px 8px;border-bottom:1px solid var(--line);}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+  .badge.present{background:#e6f7ec;color:var(--good);}
+  .badge.absent{background:#fdecec;color:#c0392b;}
+  @media (prefers-color-scheme:dark){ .badge.present{background:#0f2c1c;} .badge.absent{background:#33191a;} }
+  .top-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+  .btn-outline{border:1px solid var(--line);background:transparent;color:var(--ink);padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-solid{border:none;background:var(--brand);color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-danger{border:none;background:#c0392b;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px;}
+  .stat{background:var(--chip);border-radius:12px;padding:12px;}
+  .stat .num{font-size:20px;font-weight:800;}
+  .stat .lbl{font-size:11px;color:var(--sub);}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:24px;}
+  .overflow{overflow-x:auto;}
+  .pie-wrap{position:relative;width:170px;height:170px;margin:8px auto 12px;}
+  .pie{width:100%;height:100%;border-radius:50%;background:conic-gradient(var(--brand) calc(var(--pct)*1%), var(--line-strong) 0);}
+  .pie-center{position:absolute;inset:17px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .pie-num{font-size:22px;font-weight:800;}
+  .pie-lbl{font-size:11px;color:var(--sub);}
+  .legend{display:flex;flex-direction:column;gap:8px;font-size:13px;margin-bottom:4px;}
+  .legend-item{display:flex;align-items:center;gap:8px;}
+  .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .roster-manage{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .roster-manage input, .field input, .field select{
+    flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;
+    background:var(--bg);color:var(--ink);font-size:13px;
+  }
+  .remove-btn{border:none;background:transparent;color:#c0392b;font-size:13px;font-weight:700;cursor:pointer;}
+  .demo-toggle{
+    position:absolute;top:12px;right:12px;font-size:10px;background:var(--chip);color:var(--sub);
+    border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer;font-weight:700;
+  }
+  .note{font-size:11px;color:var(--sub);margin-top:4px;}
+  .hist-item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+  .hist-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .hist-panel{display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:12px;}
+  .hist-panel.open{display:block;}
+  .audit-tag{font-size:11px;color:var(--warn);margin-top:2px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px;}
+  .field-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .unit-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .pill{font-size:11px;background:var(--chip);color:var(--sub);padding:3px 9px;border-radius:999px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="dot"></span> VeriRoll</div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showView('student')">Student</button>
+      <button class="tab-btn" onclick="showView('lecturer')">Lecturer</button>
+      <button class="tab-btn" onclick="showView('admin')">Admin</button>
+    </div>
+  </header>
+
+  <!-- STUDENT VIEW -->
+  <div id="student" class="view active">
+    <div class="phone">
+      <button class="demo-toggle" onclick="toggleSession()">Demo: toggle session state</button>
+      <h2>CS301 · Database Systems</h2>
+      <p class="muted">Held so far: 17 of 24 lessons</p>
+
+      <div class="pie-wrap">
+        <div class="pie" style="--pct:82;"></div>
+        <div class="pie-center"><div class="pie-num">82%</div><div class="pie-lbl">Attended</div></div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><span class="dot" style="background:var(--brand);"></span> Present · 14 of 17 held</div>
+        <div class="legend-item"><span class="dot" style="background:var(--line-strong);"></span> Absent · 3 of 17 held</div>
+      </div>
+
+      <div id="student-session-block">
+        <div class="session-banner closed" id="student-banner">
+          <div class="unit">No active session</div>
+          <div class="win">Register opens when your lecturer starts one</div>
+        </div>
+        <button class="checkin-btn" id="register-btn" disabled>Register</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LECTURER VIEW -->
+  <div id="lecturer" class="view">
+    <div class="full">
+      <div class="top-controls">
+        <div>
+          <h2>CS301 · Database Systems</h2>
+          <p class="muted" id="lect-status-line">Lecture 18 of 24 · no session running</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-solid" id="session-toggle-btn" onclick="toggleSession()">Start Session</button>
+          <button class="btn-outline">Export CSV</button>
+        </div>
+      </div>
+      <p class="note">Sessions auto-close after 20 minutes even if not stopped manually. Only one session per unit can be open at a time.</p>
+
+      <div class="stat-grid">
+        <div class="stat"><div class="num">4</div><div class="lbl">Present</div></div>
+        <div class="stat"><div class="num">5</div><div class="lbl">Enrolled</div></div>
+        <div class="stat"><div class="num">80%</div><div class="lbl">This lecture</div></div>
+      </div>
+
+      <div class="roster-manage">
+        <input type="text" placeholder="Add student name...">
+        <button class="btn-solid" onclick="addStudent(this)">+ Add</button>
+      </div>
+
+      <div class="roster overflow">
+        <table id="roster-table">
+          <tr><th>Student</th><th>Time</th><th>Status</th><th></th></tr>
+          <tr><td>Amara N.</td><td>09:02:14</td><td><span class="badge present">Present</span></td><td><button class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+          <tr><td>Brian K.</td><td>09:02:20</td><td><span class="badge present">Present</span></td><td><button class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+          <tr><td>Chantal I.</td><td>09:03:01</td><td><span class="badge present">Present</span></td><td><button class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+          <tr><td>Derrick O.</td><td>—</td><td><span class="badge absent">Absent</span></td><td><button class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+          <tr><td>Esther M.</td><td>09:02:47</td><td><span class="badge present">Present</span></td><td><button class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="full">
+      <h3>Session history</h3>
+      <p class="muted">Fix a missed check-in after the fact — e.g. a student who emailed about a mistake.</p>
+
+      <div class="hist-item">
+        <div class="hist-head">
+          <div><strong>Lecture 17</strong> · Sep 19 · 4 of 5 present</div>
+          <button class="btn-outline" onclick="toggleHist(this)">Edit</button>
+        </div>
+        <div class="hist-panel">
+          <div class="roster-manage">
+            <input type="text" placeholder="Add student name...">
+            <button class="btn-solid" onclick="addStudent(this)">+ Add</button>
+          </div>
+          <table>
+            <tr><th>Student</th><th>Status</th><th></th></tr>
+            <tr><td>Derrick O.</td><td><span class="badge absent">Absent</span></td><td><button class="remove-btn">Mark present</button></td></tr>
+          </table>
+          <div class="audit-tag">Edited by lecturer · Sep 20, 08:14</div>
+        </div>
+      </div>
+
+      <div class="hist-item">
+        <div class="hist-head">
+          <div><strong>Lecture 16</strong> · Sep 17 · 5 of 5 present</div>
+          <button class="btn-outline" onclick="toggleHist(this)">Edit</button>
+        </div>
+        <div class="hist-panel">
+          <table><tr><th>Student</th><th>Status</th><th></th></tr>
+          <tr><td>Amara N.</td><td><span class="badge present">Present</span></td><td><button class="remove-btn">Mark absent</button></td></tr></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div id="admin" class="view">
+    <div class="full">
+      <h3>Course units</h3>
+      <div class="unit-row"><div>CS301 · Database Systems <span class="pill">24 lessons</span></div><div>Lecturer: Dr. Nabirye</div></div>
+      <div class="unit-row"><div>CS214 · Data Structures <span class="pill">20 lessons</span></div><div>Lecturer: Mr. Okello</div></div>
+      <div class="field-row" style="margin-top:14px;">
+        <input type="text" placeholder="New course unit name...">
+        <input type="text" placeholder="Number of lessons" style="max-width:140px;">
+        <button class="btn-solid">+ Add unit</button>
+      </div>
+    </div>
+
+    <div class="full">
+      <h3>Enrollment source</h3>
+      <p class="muted">CS301 roster synced from the school portal · 94 students · last sync today, 08:00. 2 manual overrides applied.</p>
+      <button class="btn-outline">Re-sync from portal</button>
+    </div>
+
+    <div class="full">
+      <h3>Lecturer accounts</h3>
+      <div class="unit-row"><div>Dr. Nabirye</div><div>CS301 <button class="remove-btn">Remove</button></div></div>
+      <div class="unit-row"><div>Mr. Okello</div><div>CS214 <button class="remove-btn">Remove</button></div></div>
+      <div class="field-row" style="margin-top:14px;">
+        <input type="text" placeholder="Lecturer name or email...">
+        <select><option>Assign to unit...</option><option>CS301</option><option>CS214</option></select>
+        <button class="btn-solid">+ Add lecturer</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>VeriRoll mockup · illustrative data only</footer>
+</div>
+
+<script>
+var sessionOpen = false;
+
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function toggleSession(){
+  sessionOpen = !sessionOpen;
+  var banner = document.getElementById('student-banner');
+  var regBtn = document.getElementById('register-btn');
+  var lectBtn = document.getElementById('session-toggle-btn');
+  var statusLine = document.getElementById('lect-status-line');
+
+  if(sessionOpen){
+    banner.classList.remove('closed');
+    banner.innerHTML = '<div class="unit">Session active</div><div class="win">Auto-closes in 20:00 · sign in with Google/Microsoft to register</div>';
+    regBtn.disabled = false;
+    regBtn.textContent = 'Register';
+    regBtn.classList.remove('done');
+    lectBtn.textContent = 'Stop Session';
+    lectBtn.classList.remove('btn-solid'); lectBtn.classList.add('btn-danger');
+    statusLine.textContent = 'Lecture 18 of 24 · session running';
+  } else {
+    banner.classList.add('closed');
+    banner.innerHTML = '<div class="unit">No active session</div><div class="win">Register opens when your lecturer starts one</div>';
+    regBtn.disabled = true;
+    lectBtn.textContent = 'Start Session';
+    lectBtn.classList.remove('btn-danger'); lectBtn.classList.add('btn-solid');
+    statusLine.textContent = 'Lecture 18 of 24 · no session running';
+  }
+}
+
+document.getElementById('register-btn').addEventListener('click', function(){
+  if(this.disabled) return;
+  this.textContent = '✓ Registered';
+  this.classList.add('done');
+  this.disabled = true;
+});
+
+function addStudent(btn){
+  var input = btn.previousElementSibling;
+  var name = input.value.trim();
+  if(!name) return;
+  var table = btn.closest('div').nextElementSibling.tagName === 'TABLE' ? btn.closest('div').nextElementSibling : document.getElementById('roster-table');
+  var row = table.insertRow(1);
+  row.innerHTML = '<td>'+name+'</td><td>—</td><td><span class="badge absent">Absent</span></td>'+
+    '<td><button class="remove-btn" onclick="this.closest(\'tr\').remove()">Remove</button></td>';
+  input.value = '';
+}
+
+function toggleHist(btn){
+  var panel = btn.closest('.hist-item').querySelector('.hist-panel');
+  panel.classList.toggle('open');
+}
+</script>
+</body>
+</html>
